@@ -1,0 +1,6 @@
+research.question,sub.research.question,repeat.for.variable,independent.variable,independent.variable.type,dependent.variable,dependent.variable.type,hypothesis.type
+admin2,admin_2,,,,admin_2,categorical,
+urban_rural,urban_rural,,,,urban_rural,categorical,
+msni,lsg_3,,,,lsg_sev_score_3,categorical,
+statut,ig_8_statut_groupe,,,,ig_8_statut_groupe,categorical,
+msni,msni_score_cat,,,,msni_score_cat,categorical,

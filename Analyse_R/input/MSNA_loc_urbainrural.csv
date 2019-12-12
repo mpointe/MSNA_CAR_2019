@@ -1,0 +1,548 @@
+,unique(response_updated_cluster$localite_final_labels_admin2),localites_visitees_labels,admin2,"unique(subset(df_hh, !is_in(df_hh$localite_final_labels_admin2, popsize_village$VillageAll_admin2))$localite_final_labels_admin2)",Rural vs. Urbain,MP comments,X,Y,UrbanRural,,UrbanRural_final
+1,ndelendele,N'dele,Ndele,ndele _ Ndele,Urban,,,,,,Urban
+2,gozamarndele,Site de Gozamar,Ndele,gozamar _ Ndele,#N/A,,20.625,8.42389,rural ,,rural 
+3,haoussa2ndele,Ahoussa,Ndele,haoussa2 _ Ndele,#N/A,,"20.6479989999999,8.411999",8.411999,urban,quartier ndélé,urban
+4,ngadjandele,Ngadja,Ndele,ngadja _ Ndele,#N/A,,"20.6479989999999,8.411999",8.411999,rural ,Ndele centre,rural 
+5,lemana3ndele,Lamena 3,Ndele,lemana3 _ Ndele,Rural,,,,,,Rural
+6,lemana2ndele,Lemana 2,Ndele,lemana2 _ Ndele,Rural,,,,,,Rural
+7,ouhindele,Houi,Ndele,ouhi _ Ndele,Rural,,,,,,Rural
+8,zoukoutouniala2ndele,Zoukoutouniala,Ndele,zoukoutouniala2 _ Ndele,Rural,,,,,,Rural
+9,sokoumbandele,Sokoumba,Ndele,sokoumba _ Ndele,Rural,,,,,,Rural
+10,kawabouca,Kawa,Bouca,kawa _ Bouca,Rural,,,,,,Rural
+11,ladybbouca,Lady B,Bouca,ladyb _ Bouca,#N/A,,"18.347196,7.036628",7.036628,rural,,rural
+12,gbakayabouca,Gbakaya,Bouca,gbakaya _ Bouca,Rural,,,,,,Rural
+13,dao-bacbouca,Dao-Bac,Bouca,dao-bac _ Bouca,Rural,,,,,,Rural
+14,beyabouca,BEYA,Bouca,beya _ Bouca,Rural,,,,,,Rural
+15,gbadoubouca,Gbadou,Bouca,gbadou _ Bouca,Rural,,,,,,Rural
+16,bodelebouca,Bodele,Bouca,bodele _ Bouca,Rural,,,,,,Rural
+17,boguilobouca,Boguilo,Bouca,boguilo _ Bouca,Rural,,,,,,Rural
+18,bogoin2bouca,Bogoin 2,Bouca,bogoin2 _ Bouca,Rural,,,,,,Rural
+19,babanonbouca,Babanon,Bouca,babanon _ Bouca,Rural,,,,,,Rural
+20,pk6babanonbouca,Village limite:6km bobanon,Bouca,pk6babanon _ Bouca,#N/A,Probablement Unknown 60 ou 61,18.332798,5.825515,rural,,rural
+21,missioncatholiquealindao,MISSION CATHOLIQUE,Alindao,missioncatholique _ Alindao,#N/A,,21.21499,5.04205,urban,,urban
+22,zarawaalindao,ZARAWA,Alindao,zarawa _ Alindao,Rural,,,,,,Rural
+23,kawaalindao,Kawa,Alindao,kawa _ Alindao,Urban,,,,,,Urban
+24,kongo2alindao,KONGO 2,Alindao,kongo2 _ Alindao,#N/A,Kongo dans le fichier de Matt qui est considéré comme rural,21.21499,5.04205,urban,"quartier de Alindao, Kongo 2 et non Kongo ",urban
+25,voundjadjogoalindao,VOUNDJA DJOGO,Alindao,voundjadjogo _ Alindao,#N/A,,21.21499,5.04205,urban,quartier Alindao,urban
+26,bandoalindao,Bando,Alindao,bando _ Alindao,Rural,,,,,,Rural
+27,siteelimalindao,Site Elim,Alindao,siteelim _ Alindao,#N/A,,21.21499,5.04205,urban,quartier Alindao,urban
+28,angazeu(kongbo)alindao,ANGAZEU (KONGBO),Alindao,angazeu(kongbo) _ Alindao,#N/A,,21.36464,4.77275,rural,13,rural
+29,takamalabirao,Takamala,Birao,takamala _ Birao,Rural,,,,,,Rural
+30,biraobirao,Birao 2,Birao,birao _ Birao,Urban,,,,,,Urban
+31,benguesbirao,Benguess,Birao,bengues _ Birao,Rural,,,,,,Rural
+32,armybirao,Village Army,Birao,army _ Birao,Rural,,,,,,Rural
+33,tagnagnabirao,Tagnagna,Birao,tagnagna _ Birao,Rural,,,,,,Rural
+34,bangui7ebangui,Gbangouma1,Bangui,bangui7e _ Bangui,Urban,,,,,,Urban
+35,bangui8ebangui,Galabadjia4,Bangui,bangui8e _ Bangui,Urban,,,,,,Urban
+36,bangui4ebangui,Gobongo4,Bangui,bangui4e _ Bangui,Urban,,,,,,Urban
+37,bangui3ebangui,Bangui 3e,Bangui,bangui3e _ Bangui,Urban,,,,,,Urban
+38,bangui2ebangui,Bangui 2e,Bangui,bangui2e _ Bangui,Urban,,,,,,Urban
+39,bangui6ebangui,Bangui 6e,Bangui,bangui6e _ Bangui,Urban,,,,,,Urban
+40,bangui5ebangui,Bangui 5e,Bangui,bangui5e _ Bangui,Urban,,,,,,Urban
+41,boyidoumobaye,Boyidou,Mobaye,boyidou _ Mobaye,Rural,,,,,,Rural
+42,dougbamobaye,Dougba,Mobaye,dougba _ Mobaye,Rural,,,,,,Rural
+43,banda-faramobaye,Banda-Fara,Mobaye,banda-fara _ Mobaye,Rural,,,,,,Rural
+44,bandou2mobaye,BANDOU 2,Mobaye,bandou2 _ Mobaye,Urban,,,,,,Urban
+45,kandjamobaye,KANDJA,Mobaye,kandja _ Mobaye,Urban,,,,,,Urban
+46,gbama1mobaye,GBAMA 1,Mobaye,gbama1 _ Mobaye,Rural,,,,,,Rural
+47,gbabi1mobaye,Gbabi 1,Mobaye,gbabi1 _ Mobaye,Rural,,,,,,Rural
+48,oye1mobaye,OYE 1,Mobaye,oye1 _ Mobaye,Rural,,,,,,Rural
+49,boubandamobaye,Boubanda,Mobaye,boubanda _ Mobaye,Rural,,,,,,Rural
+50,koyabroumobaye,Koyabrou,Mobaye,koyabrou _ Mobaye,Rural,,,,,,Rural
+51,mobayemobaye,Mobaye,Mobaye,mobaye _ Mobaye,Urban,,,,,,Urban
+52,campelevagebambari,CAMP ELEVAGE,Bambari,campelevage _ Bambari,#N/A,,20.65418,5.76485,urban,quartier Bambari,urban
+53,ctrobambari,CTRO,Bambari,ctro _ Bambari,Urban,,,,,,Urban
+54,kidjigra1bambari,KIDJIGRA 1,Bambari,kidjigra1 _ Bambari,#N/A,,20.65418,5.76485,urban,quartier Bambari,urban
+55,wangaye1bambari,WANGAYE 1,Bambari,wangaye1 _ Bambari,Urban,,,,,,Urban
+56,gbiassangobambari,GBIASSANGO,Bambari,gbiassango _ Bambari,Urban,,,,,,Urban
+57,aviationbambari,AVIATION,Bambari,aviation _ Bambari,#N/A,,20.657,5.803,rural,,rural
+58,sitealternatif(misca)bambari,Site alternatif (Misca),Bambari,sitealternatif(misca) _ Bambari,#N/A,,20.65418,5.76485,urban,quartier Bambari,urban
+59,minuscapk8bambari,MINUSCA PK 8,Bambari,minuscapk8 _ Bambari,#N/A,,20.65418,5.76485,urban,quartier Bambari,urban
+60,maloum1bambari,MALOUM 1,Bambari,maloum1 _ Bambari,Rural,,,,,,Rural
+61,ngalingoubambari,NGALINGOU,Bambari,ngalingou _ Bambari,#N/A,,20.63261,5.8154,rural,,rural
+62,awal1bambari,AWAL 1,Bambari,awal1 _ Bambari,Urban,,,,,,Urban
+63,awal2bambari,AWAL 2,Bambari,awal2 _ Bambari,Urban,,,,,,Urban
+64,adoumbambari,Adoum,Bambari,adoum _ Bambari,Rural,,,,,,Rural
+65,kapabandabambari,Kapabanda,Bambari,kapabanda _ Bambari,Rural,,,,,,Rural
+66,mblebandabambari,Mblebanda,Bambari,mblebanda _ Bambari,Rural,,,,,,Rural
+67,yatigazabambari,Yatigaza,Bambari,yatigaza _ Bambari,Rural,,,,,,Rural
+68,ngakobobambari,Ngakobo,Bambari,ngakobo _ Bambari,#N/A,,20.730846,5.339652,rural,,rural
+69,bouma1bambari,Bouma 1,Bambari,bouma1 _ Bambari,Rural,,,,,,Rural
+70,camp-mawabouar,Camp-Mawa,Bouar,camp-mawa _ Bouar,Urban,,,,,,Urban
+71,bouarbouar,Bouar,Bouar,bouar _ Bouar,Urban,,,,,,Urban
+72,kaetabouar,Kaeta,Bouar,kaeta _ Bouar,Rural,,,,,,Rural
+73,koumbebouar,Koumbe,Bouar,koumbe _ Bouar,Rural,,,,,,Rural
+74,beiya-gbakoundebouar,B<e9>a ,Bouar,beiya-gbakounde _ Bouar,Rural,,,,,,Rural
+75,garouabouar,Garoua,Bouar,garoua _ Bouar,Rural,,,,,,Rural
+76,pate-mamadoubouar,Pate-Mamadou,Bouar,pate-mamadou _ Bouar,Rural,,,,,,Rural
+77,mboryangabouar,Mboryanga,Bouar,mboryanga _ Bouar,Rural,,,,,,Rural
+78,kassa-zoyabouar,Kassa-Zoya,Bouar,kassa-zoya _ Bouar,Rural,,,,,,Rural
+79,groupementdouanebouar,Groupement Douane,Bouar,groupementdouane _ Bouar,Rural,,,,,,Rural
+80,nzerewerebocaranga,Gonon 1,Bocaranga,nzerewere _ Bocaranga,Urban,,,,,,Urban
+81,boborobocaranga1,Boboro,Bocaranga,boboro _ Bocaranga,Rural,,,,,,Rural
+82,mbike2bocaranga,MBIKE 2,Bocaranga,mbike2 _ Bocaranga,Rural,,,,,,Rural
+83,nzapaahonyorobocaranga,Nzapa a on yoro,Bocaranga,nzapaahonyoro _ Bocaranga,Rural,,,,,,Rural
+84,boborobocaranga2,BOBORO,Bocaranga,boboro _ Bocaranga,Rural,,,,,,Rural
+85,ecolemixte1bocaranga,ECOLE MIXTE 1,Bocaranga,ecolemixte1 _ Bocaranga,Urban,,,,,,Urban
+86,kaidomonbocaranga,KAIDOMON,Bocaranga,kaidomon _ Bocaranga,Urban,,,,,,Urban
+87,koyabocaranga,Koya,Bocaranga,koya _ Bocaranga,Rural,,,,,,Rural
+88,bossangoabossangoa,Bossangoa,Bossangoa,bossangoa _ Bossangoa,Urban,,,,,,Urban
+89,gbelekotabossangoa,Gbele Kota,Bossangoa,gbelekota _ Bossangoa,Rural,,,,,,Rural
+90,bodiguibossangoa,Bodigui,Bossangoa,bodigui _ Bossangoa,Rural,,,,,,Rural
+91,gptgbakorabossangoa,Gpt Gbakora,Bossangoa,gptgbakora _ Bossangoa,Rural,,,,,,Rural
+92,bedobobossangoa,Bedobo,Bossangoa,bedobo _ Bossangoa,Rural,,,,,,Rural
+93,arabebossangoa,Arabe,Bossangoa,arabe _ Bossangoa,Rural,,,,,,Rural
+94,gbehinnibossangoa,Gbehinni,Bossangoa,gbehinni _ Bossangoa,Rural,,,,,,Rural
+95,,,,bogale _ Bossangoa,#N/A,,17.26283,7.256756,rural,"Markunda, non bossangoa",rural
+96,lazarekaga-bandoro,Site lazare,Kaga_Bandoro,lazare _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+97,minuscakaga-bandoro,Site munuska,Kaga_Bandoro,minusca _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+98,kaga-bandorokaga-bandoro,B<e9>b<e9>,Kaga_Bandoro,kaga-bandoro _ Kaga-Bandoro,Urban,,,,,,Urban
+99,mbellakaga-bandoro,Site Mbella,Kaga_Bandoro,mbella _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+100,gobongo2kaga-bandoro,Quartier gobongo 2,Kaga_Bandoro,gobongo2 _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+101,baipo1kaga-bandoro,6 arrd quartier ba<ef>p<f4>1,Kaga_Bandoro,baipo1 _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+102,menguebokenguekaga-bandoro,Menguel Bokengue,Kaga_Bandoro,menguebokengue _ Kaga-Bandoro,Rural,,,,,,Rural
+103,bakabakaga-bandoro,Commune nanaouta (Bakaba),Kaga_Bandoro,bakaba _ Kaga-Bandoro,Urban,,,,,,Urban
+104,patcho1kaga-bandoro,Patcho,Kaga_Bandoro,patcho1 _ Kaga-Bandoro,Rural,,,,,,Rural
+105,grevai2kaga-bandoro,Grevai 1,Kaga_Bandoro,grevai2 _ Kaga-Bandoro,Rural,,,,,,Rural
+106,zindikaga-bandoro,Zindi,Kaga_Bandoro,zindi _ Kaga-Bandoro,Rural,,,,,,Rural
+107,kabakaga-bandoro,Commune ngrevail(Site kaba),Kaga_Bandoro,kaba _ Kaga-Bandoro,Rural,,,,,,Rural
+108,bakoutekaga-bandoro,Bakout<e9>,Kaga_Bandoro,bakoute _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+109,boubou1kaga-bandoro,Boubou2,Kaga_Bandoro,boubou1 _ Kaga-Bandoro,Rural,,,,,,Rural
+110,fah-villagekaga-bandoro,Fah village,Kaga_Bandoro,fah-village _ Kaga-Bandoro,Rural,,,,,,Rural
+111,botokonkaga-bandoro,Village botokon,Kaga_Bandoro,botokon _ Kaga-Bandoro,Rural,,,,,,Rural
+112,kangakaga-bandoro,Kanga,Kaga_Bandoro,kanga _ Kaga-Bandoro,Rural,,,,,,Rural
+113,ganamakaga-bandoro,Ganama,Kaga_Bandoro,ganama _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+114,yanendjikaga-bandoro,Yanindji,Kaga_Bandoro,yanendji _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+115,typoyeurkaga-bandoro,Tipoyeur,Kaga_Bandoro,typoyeur _ Kaga-Bandoro,#N/A,,19.191543,6.990379,urban,,urban
+116,batayangakoui,BATAYANGA,Koui,batayanga _ Koui,Urban,,,,,,Urban
+117,djoguelkoui,DJOGUEL,Koui,djoguel _ Koui,Urban,,,,,,Urban
+118,lamordekoui,LAMORDE,Koui,lamorde _ Koui,Urban,,,,,,Urban
+119,bomangokoui,Bomango,Koui,bomango _ Koui,Rural,,,,,,Rural
+120,mbilagbikoui,MBILAGBI,Koui,mbilagbi _ Koui,Urban,,,,,,Urban
+121,populaire1koui,Populaire 1,Koui,populaire1 _ Koui,Urban,,,,,,Urban
+122,kobadjabakala,Kobadja,Bakala,kobadja _ Bakala,Rural,,,,,,Rural
+123,koudoukoubakala,Koudoukou,Bakala,koudoukou _ Bakala,Rural,,,,,,Rural
+124,bakalabakala,Bakala,Bakala,bakala _ Bakala,Rural,,,,,,Rural
+125,banguelabakala,GBNGUELA,Bakala,banguela _ Bakala,#N/A,,20.399,6.0531,rural,Banguela,rural
+126,badakoubangassou,Badakou,Bangassou,badakou _ Bangassou,Urban,,,,,,Urban
+127,dingadiguibangassou,Dingadigui,Bangassou,dingadigui _ Bangassou,Rural,,,,,,Rural
+128,boymassebangassou,Boymasse,Bangassou,boymasse _ Bangassou,Rural,,,,,,Rural
+129,bambarassabangassou,Bambarassa,Bangassou,bambarassa _ Bangassou,Rural,,,,,,Rural
+130,youngofongo1bangassou,Yongofongo 1,Bangassou,youngofongo1 _ Bangassou,Rural,,,,,,Rural
+131,ngbandabangassou,Ngbanda,Bangassou,ngbanda _ Bangassou,Rural,,,,,,Rural
+132,makembebangassou,Makembe,Bangassou,makembe _ Bangassou,Rural,,,,,,Rural
+133,gbombebangassou,Gbombe,Bangassou,gbombe _ Bangassou,Rural,,,,,,Rural
+134,bondelebangassou,Bondony,Bangassou,bondele _ Bangassou,Rural,,,,,,Rural
+135,bondobangassou,MBONDO,Bangassou,bondo _ Bangassou,Rural,,,,,,Rural
+136,bendenana-bakassa,Bende,Nana_Bakassa,bende _ Nana-Bakassa,Rural,,,,,,Rural
+137,bokpata1nana-bakassa,Bokpata 1,Nana_Bakassa,bokpata1 _ Nana-Bakassa,Rural,,,,,,Rural
+138,bomboimonana-bakassa,Bomboimo,Nana_Bakassa,bomboimo _ Nana-Bakassa,Rural,,,,,,Rural
+139,bendouinana-bakassa,Bendoui,Nana_Bakassa,bendoui _ Nana-Bakassa,Rural,,,,,,Rural
+140,anafionana-bakassa,Anafio,Nana_Bakassa,anafio _ Nana-Bakassa,Urban,,,,,,Urban
+141,gptkoukinana-bakassa,Gpt Kouki,Nana_Bakassa,gptkouki _ Nana-Bakassa,Rural,,,,,,Rural
+142,bingba3rafai,Bengba 3(site A),Rafai,bingba3 _ Rafai,#N/A,,23.933396,4.969394,urban,site Rafai,urban
+143,kpeterafai,Kpete,Rafai,kpete _ Rafai,Urban,,,,,,Urban
+144,ngonzarafai,Ngonza,Rafai,ngonza _ Rafai,Urban,,,,,,Urban
+145,samborarafai,Sambora,Rafai,sambora _ Rafai,Rural,,,,,,Rural
+146,sandourafai,sandou (site b),Rafai,sandou _ Rafai,#N/A,,23.933396,4.969394,urban,site Rafai,urban
+147,aimrafai,AIM (siteA),Rafai,aim _ Rafai,#N/A,,23.933396,4.969394,urban,site Rafai,urban
+148,rafairafai,(Rafai) quartier mogba,Rafai,rafai _ Rafai,Urban,,,,,,Urban
+149,loungbarafai,LOUNGBA,Rafai,loungba _ Rafai,Urban,,,,,,Urban
+150,benengaoundaye,B<e8>ne,Ngaoundaye,bene _ Ngaoundaye,#N/A,,15.7733,7.2722,rural,,rural
+151,kouleongaoundaye,Kouleo,Ngaoundaye,kouleo _ Ngaoundaye,Rural,,,,,,Rural
+152,kodingaoundaye,Kodi,Ngaoundaye,kodi _ Ngaoundaye,Urban,,,,,,Urban
+153,bokongaoundaye,Boko,Ngaoundaye,boko _ Ngaoundaye,Rural,,,,,,Rural
+154,baclimngaoundaye,Bac Lim,Ngaoundaye,baclim _ Ngaoundaye,Urban,,,,,,Urban
+155,bouabouroungaoundaye,Bouabourou,Ngaoundaye,bouabourou _ Ngaoundaye,Rural,,,,,,Rural
+156,mbereguilingaoundaye,Mbereguili,Ngaoundaye,mbereguili _ Ngaoundaye,Rural,,,,,,Rural
+157,gbazaippy,Gbaza,Ippy,gbaza _ Ippy,Urban,,,,,,Urban
+158,ippyippy,Ippy,Ippy,ippy _ Ippy,Urban,,,,,,Urban
+159,domoippy,Domo,Ippy,domo _ Ippy,Rural,,,,,,Rural
+160,ngoubondoippy,Ngoubondo,Ippy,ngoubondo _ Ippy,Rural,,,,,,Rural
+161,panengaippy,PANANGA,Ippy,panenga _ Ippy,#N/A,,21.39,6.27,rural,"coord int, axe IPPY BRIA",rural
+162,berberatiberberati,Berberati,Berberati,berberati _ Berberati,Urban,,,,,,Urban
+163,donlogoberberati,Donlogo,Berberati,donlogo _ Berberati,Urban,,,,,,Urban
+164,begoberberati,Bego,Berberati,bego _ Berberati,Rural,,,,,,Rural
+165,aradiberberati,Aradi,Berberati,aradi _ Berberati,Urban,,,,,,Urban
+166,ouattaberberati,Ouatta,Berberati,ouatta _ Berberati,Urban,,,,,,Urban
+167,mbresmbres,Bangora 1,Mbres,mbres _ Mbres,#N/A,,19.796746,6.668118,urban,,urban
+168,ouande-linguirimbres,Linguiri,Mbres,ouande-linguiri _ Mbres,Rural,,,,,,Rural
+169,bozoumbres,Gbouzou,Mbres,bozou _ Mbres,Rural,,,,,,Rural
+170,blakadjambres,Blakadja1,Mbres,blakadja _ Mbres,Rural,,,,,,Rural
+171,balekete(azene)mbres,Balekete-Azene,Mbres,balekete(azene) _ Mbres,Rural,,,,,,Rural
+172,maorkambres,Maorka,Mbres,maorka _ Mbres,Rural,,,,,,Rural
+173,ndibambres,Ndiba,Mbres,ndiba _ Mbres,Rural,,,,,,Rural
+174,ngoumbetibimbo,Ngoumbeti,Bimbo,ngoumbeti _ Bimbo,Urban,,,,,,Urban
+175,ndiabimbo,Ndia,Bimbo,ndia _ Bimbo,Rural,,,,,,Rural
+176,sebokele3bimbo,Sebokele 3,Bimbo,sebokele3 _ Bimbo,Rural,,,,,,Rural
+177,zilabimbo,Zila,Bimbo,zila _ Bimbo,Urban,,,,,,Urban
+178,bogbaya1bimbo,Bogbaya 1,Bimbo,bogbaya1 _ Bimbo,Rural,,,,,,Rural
+179,kpanba1bimbo,Kpanba 1,Bimbo,kpanba1 _ Bimbo,Urban,,,,,,Urban
+180,guerengou-pontbimbo,Guerengou-Pont,Bimbo,guerengou-pont _ Bimbo,Rural,,,,,,Rural
+181,boherebimbo,Bohere,Bimbo,bohere _ Bimbo,Rural,,,,,,Rural
+182,mindoukotagrimari,Mindjoukota,Grimari,mindoukota _ Grimari,Rural,,,,,,Rural
+183,guissibandagrimari,Guissibanda,Grimari,guissibanda _ Grimari,Rural,,,,,,Rural
+184,goussoumagrimari,Goussouma,Grimari,goussouma _ Grimari,Urban,,,,,,Urban
+185,bakoagrimari,Bakoa,Grimari,bakoa _ Grimari,Rural,,,,,,Rural
+186,ndjangalagrimari,Ndjangala,Grimari,ndjangala _ Grimari,Rural,,,,,,Rural
+187,kandjia2grimari,Kandjia 2,Grimari,kandjia2 _ Grimari,Urban,,,,,,Urban
+188,gouhoutougrimari,Gouhoutou,Grimari,gouhoutou _ Grimari,Rural,,,,,,Rural
+189,bougoua1grimari,Bougoua 1,Grimari,bougoua1 _ Grimari,Rural,,,,,,Rural
+190,bakongosibut,Bakongo,Sibut,bakongo _ Sibut,Urban,,,,,,Urban
+191,bindisibut,Bindi,Sibut,bindi _ Sibut,Rural,,,,,,Rural
+192,boakana2sibut,Boakana 2,Sibut,boakana2 _ Sibut,Rural,,,,,,Rural
+193,boambali1sibut,Boambali 1,Sibut,boambali1 _ Sibut,Rural,,,,,,Rural
+194,banga1sibut,Banga 1,Sibut,banga1 _ Sibut,Rural,,,,,,Rural
+195,boakanasibut,Boakana,Sibut,boakana _ Sibut,Rural,,,,,,Rural
+196,bokoute2sibut,Bokoute 2,Sibut,bokoute2 _ Sibut,Urban,,,,,,Urban
+197,bokossinsibut,Bokossin,Sibut,bokossin _ Sibut,Urban,,,,,,Urban
+198,djaindola2sibut,Djaindola 2,Sibut,djaindola2 _ Sibut,Rural,,,,,,Rural
+199,bango2ndjoukou,Bango 2,Ndjoukou,bango2 _ Ndjoukou,Rural,,,,,,Rural
+200,djouda1ndjoukou,Djouda 1,Ndjoukou,djouda1 _ Ndjoukou,Rural,,,,,,Rural
+201,gbiangorandjoukou,Gbiangora,Ndjoukou,gbiangora _ Ndjoukou,Rural,,,,,,Rural
+202,guiguibandandjoukou,Guigui Banda,Ndjoukou,guiguibanda _ Ndjoukou,Rural,,,,,,Rural
+203,dekombimbindjoukou,Deko Mbimbi,Ndjoukou,dekombimbi _ Ndjoukou,Rural,,,,,,Rural
+204,mouroufleuvendjoukou,Mourou Fleuve,Ndjoukou,mouroufleuve _ Ndjoukou,Rural,,,,,,Rural
+205,campcotonafndjoukou,Camp Cotonaf,Ndjoukou,campcotonaf _ Ndjoukou,Urban,,,,,,Urban
+206,labambandjoukou,La bamba,Ndjoukou,labamba _ Ndjoukou,Rural,,,,,,Rural
+207,pk2kpabendjoukou,Kangamote 2km de kpabe,Ndjoukou,pk2kpabe _ Ndjoukou,#N/A,,19.081523,5.657561,rural,"Coord de Kpape, pk2 de Kangamote coord inc",rural
+208,kassiandjoukou,KASSIA,Ndjoukou,kassia _ Ndjoukou,Rural,,,,,,Rural
+209,unknown50baboua,Alime,Baboua,unknown50 _ Baboua,Rural,,,,,,Rural
+210,ngamongobaboua,Ngamongo,Baboua,ngamongo _ Baboua,Rural,,,,,,Rural
+211,belangababoua,Belanga,Baboua,belanga _ Baboua,Rural,,,,,,Rural
+212,captarababoua,Captara,Baboua,captara _ Baboua,Rural,,,,,,Rural
+213,gargazallobaboua,Garga Zallo,Baboua,gargazallo _ Baboua,Rural,,,,,,Rural
+214,mayo-lara1baboua,Mayo-Lara 1,Baboua,mayo-lara1 _ Baboua,Rural,,,,,,Rural
+215,bondibababoua,Bondiba,Baboua,bondiba _ Baboua,Rural,,,,,,Rural
+216,broussebaboua,Brousse,Baboua,brousse _ Baboua,Rural,,,,,,Rural
+217,gbabouababoua,Gbaboua,Baboua,gbaboua _ Baboua,Rural,,,,,,Rural
+218,nadziboroabba,Nadziboro,Abba,nadziboro _ Abba,Rural,,,,,,Rural
+219,ngbafio1abba,Ngbafio 1,Abba,ngbafio1 _ Abba,Rural,,,,,,Rural
+220,unknown39abba,Bondjoukombo (Lami-pong 5-pk),Abba,unknown39 _ Abba,Rural,,,,,,Rural
+221,sandabogueraabba,Sanda Boguera,Abba,sandaboguera _ Abba,Rural,,,,,,Rural
+222,gbagazaabba,Gbagaza,Abba,gbagaza _ Abba,Rural,,,,,,Rural
+223,koeabba,Koe,Abba,koe _ Abba,Rural,,,,,,Rural
+224,abboboyafeabba,Abbo Boyafe,Abba,abboboyafe _ Abba,Rural,,,,,,Rural
+225,gbadingabba,Gbanding,Abba,gbading _ Abba,Rural,,,,,,Rural
+226,gougbereobo,Gougbere,Obo,gougbere _ Obo,#N/A,,26.483092,5.418046,rural,,rural
+227,gougbere-bazimaobo,GOUGBERE-BAZIMA,Obo,gougbere-bazima _ Obo,Urban,,,,,,Urban
+228,oboobo,NAIROBI 1,Obo,obo _ Obo,Urban,,,,,,Urban
+229,boyoobo,Boyo,Obo,boyo _ Obo,#N/A,,26.494639,5.403851,rural,,rural
+230,gamboobo,Gambo,Obo,gambo _ Obo,#N/A,,26.494639,5.403851,urban,,urban
+231,nguilinguiliobo,Nguilinguili,Obo,nguilinguili _ Obo,#N/A,,26.494639,5.403851,urban,,urban
+232,nakpangaobo,NAKPANGA,Obo,nakpanga _ Obo,#N/A,,26.494639,5.403851,urban,,urban
+233,bambitoobo,BAMBITO,Obo,bambito _ Obo,#N/A,,26.494639,5.403851,urban,,urban
+234,motopiobo,MOTOPI,Obo,motopi _ Obo,#N/A,,26.494639,5.403851,urban,,urban
+235,bogama1kabo,Bogama1,Kabo,bogama1 _ Kabo,Rural,,,,,,Rural
+236,sitec(citedelapaix)kabo,Site c(blocA),Kabo,sitec(citedelapaix) _ Kabo,#N/A,,18.626926,7.695467,urban,site,urban
+237,kemngoyeyekabo,Kemngoyeye,Kabo,kemngoyeye _ Kabo,Rural,,,,,,Rural
+238,ndimba1kabo,Ndimba1,Kabo,ndimba1 _ Kabo,Rural,,,,,,Rural
+239,ngonikirakabo,Sogniki,Kabo,ngonikira _ Kabo,#N/A,,18.516073,7.569745,rural,pk 11 depuis Kabo mais pas de coord gps precise,rural
+240,farazalabkabo,Farazala,Kabo,farazalab _ Kabo,#N/A,,18.74324,7.38043,rural,,rural
+241,kava2kabo,Kava2,Kabo,kava2 _ Kabo,Urban,,,,,,Urban
+242,goyakouango,Banga 2,Kouango,goya _ Kouango,#N/A,,20.696724,4.935246,rural,,rural
+243,borotokouango,Boroto,Kouango,boroto _ Kouango,Rural,,,,,,Rural
+244,bombala2kouango,Bombala 2,Kouango,bombala2 _ Kouango,Urban,,,,,,Urban
+245,gbadakouango,Gbada,Kouango,gbada _ Kouango,Rural,,,,,,Rural
+246,gbagomarakouango,Gbagomara,Kouango,gbagomara _ Kouango,Rural,,,,,,Rural
+247,lindaokouango,Lindao,Kouango,lindao _ Kouango,#N/A,,20.0335,4.9785,rural,,rural
+248,doungba4kouango,Doungba 4,Kouango,doungba4 _ Kouango,Rural,,,,,,Rural
+249,camp-coupeurskouango,Camp_kouper,Kouango,camp-coupeurs _ Kouango,Rural,,,,,,Rural
+250,yoloungououango,Youloungou,Ouango,yoloungou _ Ouango,Rural,,,,,,Rural
+251,boboouango,Bobo,Ouango,bobo _ Ouango,Urban,,,,,,Urban
+252,ndogbaouango,Ndogba,Ouango,ndogba _ Ouango,Urban,,,,,,Urban
+253,yenziaouango,Yenzia,Ouango,yenzia _ Ouango,Rural,,,,,,Rural
+254,mbambaleouango,Mbambale,Ouango,mbambale _ Ouango,Rural,,,,,,Rural
+255,basse-kottoouango,Basse Kotto,Ouango,basse-kotto _ Ouango,Rural,,,,,,Rural
+256,amanigambo,Amani,Gambo,amani _ Gambo,Rural,,,,,,Rural
+257,baogambo,Bao,Gambo,bao _ Gambo,Rural,,,,,,Rural
+258,mbringagambo,Mbringa,Gambo,mbringa _ Gambo,Rural,,,,,,Rural
+259,babalagambo,Babala,Gambo,babala _ Gambo,Rural,,,,,,Rural
+260,mbangogambo,Mbango,Gambo,mbango _ Gambo,Rural,,,,,,Rural
+261,baguinigambo,Baguini,Gambo,baguini _ Gambo,Rural,,,,,,Rural
+262,socadagambo,Socada,Gambo,socada _ Gambo,Rural,,,,,,Rural
+263,bogodoketenangha-boguila,Bogodo Kete,Nangha_Boguila,bogodokete _ Nangha-Boguila,Rural,,,,,,Rural
+264,boguila-ketenangha-boguila,Boguila-Kete,Nangha_Boguila,boguila-kete _ Nangha-Boguila,Rural,,,,,,Rural
+265,bananganangha-boguila,Bananga,Nangha_Boguila,bananga _ Nangha-Boguila,Rural,,,,,,Rural
+266,bokote-alatonangha-boguila,Bokote-Alato,Nangha_Boguila,bokote-alato _ Nangha-Boguila,Rural,,,,,,Rural
+267,bedinnangha-boguila,Bedin,Nangha_Boguila,bedin _ Nangha-Boguila,Rural,,,,,,Rural
+268,bogone3nangha-boguila,Bogone 3,Nangha_Boguila,bogone3 _ Nangha-Boguila,Rural,,,,,,Rural
+269,bonoi2nangha-boguila,Bonoi 2,Nangha_Boguila,bonoi2 _ Nangha-Boguila,Rural,,,,,,Rural
+270,bombara-kotanangha-boguila,Bombara-Kota,Nangha_Boguila,bombara-kota _ Nangha-Boguila,Rural,,,,,,Rural
+271,boguelanangha-boguila,Boguela,Nangha_Boguila,boguela _ Nangha-Boguila,Rural,,,,,,Rural
+272,bogazanangha-boguila,Babaro,Nangha_Boguila,bogaza _ Nangha-Boguila,Rural,,,,,,Rural
+273,gbaya2damara,Nguerengou1,Damara,gbaya2 _ Damara,Rural,,,,,,Rural
+274,gbadamara,Gba,Damara,gba _ Damara,Rural,,,,,,Rural
+275,gbeledamara,Gbele,Damara,gbele _ Damara,Rural,,,,,,Rural
+276,gbagodamara,Gbago,Damara,gbago _ Damara,Urban,,,,,,Urban
+277,ngoukadamara,Ngouka,Damara,ngouka _ Damara,Urban,,,,,,Urban
+278,marabadamara,Pata,Damara,maraba _ Damara,Rural,,,,,,Rural
+279,bosseledamara,Bossele,Damara,bossele _ Damara,Rural,,,,,,Rural
+280,bakparadamara,Bakpara,Damara,bakpara _ Damara,Rural,,,,,,Rural
+281,dongbe1damara,Dongbe 1,Damara,dongbe1 _ Damara,Rural,,,,,,Rural
+282,bolitouadamara,Bolitoua,Damara,bolitoua _ Damara,Rural,,,,,,Rural
+283,bokonebozoum,BOKONE,Bozoum,bokone _ Bozoum,Urban,,,,,,Urban
+284,mid-missionbozoum,Mine mission,Bozoum,mid-mission _ Bozoum,Urban,,,,,,Urban
+285,unknown58bozoum,Unkonwn58(kosso),Bozoum,unknown58 _ Bozoum,Rural,,,,,,Rural
+286,kpetenebozoum,KPETENE,Bozoum,kpetene _ Bozoum,Urban,,,,,,Urban
+287,kare-bee2bozoum,KARE-BEE 2,Bozoum,kare-bee2 _ Bozoum,Urban,,,,,,Urban
+288,haybozoum,Ha<ef> 1,Bozoum,hay _ Bozoum,Rural,,,,,,Rural
+289,zazabozoum,Zaza,Bozoum,zaza _ Bozoum,Urban,,,,,,Urban
+290,tabalebozoum,Tabar<e9> ( tambar<e9>),Bozoum,tabale _ Bozoum,Urban,,,,,,Urban
+291,zomberebossemtele,Zombere,Bossemtele,zombere _ Bossemtele,Rural,,,,,,Rural
+292,gbanengue2bossemtele,GBANENGUE 2,Bossemtele,gbanengue2 _ Bossemtele,Rural,,,,,,Rural
+293,bofforobossemtele,Bofforo,Bossemtele,bofforo _ Bossemtele,Rural,,,,,,Rural
+294,bocongobossemtele,Bocongo,Bossemtele,bocongo _ Bossemtele,Rural,,,,,,Rural
+295,gbandenguebossemtele,GBANDENGUE,Bossemtele,gbandengue _ Bossemtele,Rural,,,,,,Rural
+296,boyali1bossemtele,Boyali 1,Bossemtele,boyali1 _ Bossemtele,Rural,,,,,,Rural
+297,ballabossemtele,BALLA,Bossemtele,balla _ Bossemtele,Urban,,,,,,Urban
+298,taleypaoua,TALEY,Paoua,taley _ Paoua,Rural,,,,,,Rural
+299,platonpaoua,PLATON,Paoua,platon _ Paoua,Urban,,,,,,Urban
+300,poubatipaoua,Poubati,Paoua,poubati _ Paoua,Urban,,,,,,Urban
+301,betiboinda1paoua,BETIBOINDA 1,Paoua,betiboinda1 _ Paoua,Rural,,,,,,Rural
+302,bemaidecitypaoua,BEMAIDE CITY,Paoua,bemaidecity _ Paoua,Urban,,,,,,Urban
+303,bedaya1(ndimbaya)paoua,BEDAYA 1 (NDIMBAYA),Paoua,bedaya1(ndimbaya) _ Paoua,Urban,,,,,,Urban
+304,beboy1paoua,BEBOY 1,Paoua,beboy1 _ Paoua,Rural,,,,,,Rural
+305,bebouzawe1paoua,BEBOUZAWE 1,Paoua,bebouzawe1 _ Paoua,Rural,,,,,,Rural
+306,barya(gangnda)paoua,BARYA (GANG NDA),Paoua,barya(gangnda) _ Paoua,Rural,,,,,,Rural
+307,acadoppaoua,ACADOP,Paoua,acadop _ Paoua,Urban,,,,,,Urban
+308,aerodromepaoua,AERODROME,Paoua,aerodrome _ Paoua,Urban,,,,,,Urban
+309,bongo2dekoa,Bongo 2,Dekoa,bongo2 _ Dekoa,Rural,,,,,,Rural
+310,gou2dekoa,Gou 2,Dekoa,gou2 _ Dekoa,Rural,,,,,,Rural
+311,begoudekoa,Begou,Dekoa,begou _ Dekoa,Rural,,,,,,Rural
+312,cotonafdekoa,Cotonaf,Dekoa,cotonaf _ Dekoa,Rural,,,,,,Rural
+313,gbegondekoa,Gbegon,Dekoa,gbegon _ Dekoa,Rural,,,,,,Rural
+314,boangadekoa,Boanga,Dekoa,boanga _ Dekoa,Rural,,,,,,Rural
+315,bongodekoa,Bongo,Dekoa,bongo _ Dekoa,Rural,,,,,,Rural
+316,tilodekoa,Tilo,Dekoa,tilo _ Dekoa,Rural,,,,,,Rural
+317,bayelakadekoa,Bayelaka,Dekoa,bayelaka _ Dekoa,Rural,,,,,,Rural
+318,ngoudongo1dekoa,Ngoudongo 1,Dekoa,ngoudongo1 _ Dekoa,Rural,,,,,,Rural
+319,yombamala,Yomba,Mala,yomba _ Mala,Rural,,,,,,Rural
+320,assoulemakamala,Assoulemaka,Mala,assoulemaka _ Mala,Rural,,,,,,Rural
+321,marbamala,Marba,Mala,marba _ Mala,Rural,,,,,,Rural
+322,bilamala,Bila,Mala,bila _ Mala,Rural,,,,,,Rural
+323,bokoutemala,Bokoute,Mala,bokoute _ Mala,Urban,,,,,,Urban
+324,koumamala,Kouma,Mala,kouma _ Mala,Rural,,,,,,Rural
+325,malamala,Mala,Mala,mala _ Mala,Urban,,,,,,Urban
+326,bassekoumamala,Basse Kouma,Mala,bassekouma _ Mala,Rural,,,,,,Rural
+327,ngourkaba1mala,Ngourkaba 1,Mala,ngourkaba1 _ Mala,Rural,,,,,,Rural
+328,briabria,Bria,Bria,bria _ Bria,Urban,,,,,,Urban
+329,amameubria,AMAMEU,Bria,amameu _ Bria,Urban,,,,,,Urban
+330,galabadjabria,GALABADJA,Bria,galabadja _ Bria,Urban,,,,,,Urban
+331,gbadoubria,GBADOU,Bria,gbadou _ Bria,Urban,,,,,,Urban
+332,mande3bria,MANDE 3,Bria,mande3 _ Bria,Urban,,,,,,Urban
+333,hopitaldebriabria,Hopital de Bria,Bria,hopitaldebria _ Bria,#N/A,,21.991405,6.537415,urban,,Urban
+334,eglisecebi1bria,Eglise CEBI 1,Bria,eglisecebi1 _ Bria,#N/A,,21.991405,6.537415,urban,,urban
+335,gobolo2bria,GOBOLO 2,Bria,gobolo2 _ Bria,Urban,,,,,,Urban
+336,ndomende1bria,NDOMENDE 1,Bria,ndomende1 _ Bria,Urban,,,,,,Urban
+337,ngoubibria,Ngoubi,Bria,ngoubi _ Bria,Rural,,,,,,Rural
+338,lasimbria,LA SIM,Bria,lasim _ Bria,Urban,,,,,,Urban
+339,pk3bria,PK 3,Bria,pk3 _ Bria,#N/A,,,,urban,avec buffer de Matt on peut considerer que pk3 depuis Bria est en urban,urban
+340,bornou1bria,BORNOU 2,Bria,bornou1 _ Bria,Urban,,,,,,Urban
+341,boungubria,Boungou 1,Bria,boungu _ Bria,#N/A,,21.986,6.7555,rural,,rural
+342,ayerokpobria,Ayorokpo_goumbadja,Bria,ayerokpo _ Bria,Rural,,,,,,Rural
+343,balangabria,BALANGBA1,Bria,balanga _ Bria,Rural,,,,,,Rural
+344,eglisecebi3bria,Eglise CEBI 3,Bria,eglisecebi3 _ Bria,#N/A,,21.991405,6.537415,urban,,urban
+345,eglisecatholiquebria,Eglise Catholique,Bria,eglisecatholique _ Bria,#N/A,,21.991405,6.537415,urban,,urban
+346,passikibakouma,Passiki,Bakouma,passiki _ Bakouma,Urban,,,,,,Urban
+347,legobakouma,Lego,Bakouma,lego _ Bakouma,Rural,,,,,,Rural
+348,madiguibakouma,Madigui,Bakouma,madigui _ Bakouma,Rural,,,,,,Rural
+349,zimebakouma,Zime,Bakouma,zime _ Bakouma,Rural,,,,,,Rural
+350,nguerefarabakouma,Nguerefara,Bakouma,nguerefara _ Bakouma,Urban,,,,,,Urban
+351,bakoumabakouma,Bakouma,Bakouma,bakouma _ Bakouma,Urban,,,,,,Urban
+352,,,,sitebakouma _ Bakouma,#N/A,,22.781732,5.701929,urban,,urban
+353,baliguinibakouma,Balinguini,Bakouma,baliguini _ Bakouma,#N/A,,22.8005,5.3968,rural,,rural
+354,fadamabakouma,FADAMA,Bakouma,fadama _ Bakouma,Rural,,,,,,Rural
+355,gomokoboali,Gomoko,Boali,gomoko _ Boali,Rural,,,,,,Rural
+356,bokaneboali,Bokane,Boali,bokane _ Boali,Rural,,,,,,Rural
+357,didangoboali,Didango,Boali,didango _ Boali,Rural,,,,,,Rural
+358,gbahaoboali,Gbahao,Boali,gbahao _ Boali,Rural,,,,,,Rural
+359,bogaziboali,Bogazi,Boali,bogazi _ Boali,Rural,,,,,,Rural
+360,bogoulaboali,Bogoula,Boali,bogoula _ Boali,Rural,,,,,,Rural
+361,boganiboali,Bogani,Boali,bogani _ Boali,Rural,,,,,,Rural
+362,boaliboali,Boali chute,Boali,boali _ Boali,Urban,,,,,,Urban
+363,unknown87bamingui,ADOUMINDOU,Bamingui,unknown87 _ Bamingui,Rural,,,,,,Rural
+364,baloubabamingui,Balouba,Bamingui,balouba _ Bamingui,Rural,,,,,,Rural
+365,niango2bamingui,Niango 2,Bamingui,niango2 _ Bamingui,Urban,,,,,,Urban
+366,niango1bamingui,Niango 1,Bamingui,niango1 _ Bamingui,Rural,,,,,,Rural
+367,mbengoubamingui,Mbengou,Bamingui,mbengou _ Bamingui,Rural,,,,,,Rural
+368,yambalabamingui,Yambala,Bamingui,yambala _ Bamingui,#N/A,,20.046,7.2308,rural,,rural
+369,kotissakobamingui,Kotissako,Bamingui,kotissako _ Bamingui,Rural,,,,,,Rural
+370,tedoabaoro,Tedoa,Baoro,tedoa _ Baoro,Rural,,,,,,Rural
+371,balembe2baoro,Balembe 2,Baoro,balembe2 _ Baoro,Rural,,,,,,Rural
+372,bawibaoro,Bawi,Baoro,bawi _ Baoro,Rural,,,,,,Rural
+373,groupementmbormonbaoro,Groupement Mbormon,Baoro,groupementmbormon _ Baoro,Rural,,,,,,Rural
+374,yorogbayabaoro,Yoro Gbaya,Baoro,yorogbaya _ Baoro,Urban,,,,,,Urban
+375,bayangadidibaoro,Bayanga Didi,Baoro,bayangadidi _ Baoro,Rural,,,,,,Rural
+376,patebaoro,Yoro_samba_bougoulou (paat<e9>),Baoro,pate _ Baoro,Rural,,,,,,Rural
+377,kpeketombaiki,Kpeketo,Mbaiki,kpeketo _ Mbaiki,Rural,,,,,,Rural
+378,belou2mbaiki,Belou,Mbaiki,belou2 _ Mbaiki,Rural,,,,,,Rural
+379,mbatambaiki,Socefi 1,Mbaiki,mbata _ Mbaiki,Urban,,,,,,Urban
+380,bokomambaiki,Bokoma,Mbaiki,bokoma _ Mbaiki,Rural,,,,,,Rural
+381,bagandoumbaiki,Bagandou,Mbaiki,bagandou _ Mbaiki,Urban,,,,,,Urban
+382,bongombembaiki,Bongombe 1 ,Mbaiki,bongombe _ Mbaiki,Rural,,,,,,Rural
+383,pissambaiki,Sangala 2,Mbaiki,pissa _ Mbaiki,Rural,,,,,,Rural
+384,boumoumbaiki,Gbenou,Mbaiki,boumou _ Mbaiki,Rural,,,,,,Rural
+385,dujardinmbaiki,Du jardin,Mbaiki,dujardin _ Mbaiki,#N/A,,,,,"absent, Dujardin ecrivain francais 20 siecle, quartier Mbaiki? ",Urban
+386,kodje1zangba,Kodje 1,Zangba,kodje1 _ Zangba,Rural,,,,,,Rural
+387,gouadje2zangba,Gouadje 2,Zangba,gouadje2 _ Zangba,Rural,,,,,,Rural
+388,balidou1zangba,Balidou 1,Zangba,balidou1 _ Zangba,Urban,,,,,,Urban
+389,ngapozangba,Ngapo,Zangba,ngapo _ Zangba,Rural,,,,,,Rural
+390,mategbazangba,Mategba,Zangba,mategba _ Zangba,Rural,,,,,,Rural
+391,kpoulouzangba,Kpoulou,Zangba,kpoulou _ Zangba,Rural,,,,,,Rural
+392,gboumazangba,Ngombe Moune,Zangba,gbouma _ Zangba,Rural,,,,,,Rural
+393,kodje3zangba,Kodje 3,Zangba,kodje3 _ Zangba,Rural,,,,,,Rural
+394,kitessazemio,Kitessa,Zemio,kitessa _ Zemio,Rural,,,,,,Rural
+395,tambourazemio,Tamboura,Zemio,tamboura _ Zemio,Rural,,,,,,Rural
+396,koumbolizemio,KOUMBOLI,Zemio,koumboli _ Zemio,Rural,,,,,,Rural
+397,bandakpazemio,Bandakpa,Zemio,bandakpa _ Zemio,Urban,,,,,,Urban
+398,bandassizemio,Bandassi,Zemio,bandassi _ Zemio,Urban,,,,,,Urban
+399,gendarmeriezemio,Gendarmerie,Zemio,gendarmerie _ Zemio,#N/A,,25.129423,5.024257,urban,,urban
+400,arguezemio,ARGUE,Zemio,argue _ Zemio,#N/A,,25.129423,5.024257,urban,,urban
+401,zemiozemio,Mahamat,Zemio,zemio _ Zemio,Urban,,,,,,Urban
+402,zibobaggabatangafo,Site Zino baggae,Batangafo,zibobagga _ Batangafo,#N/A,,18.285135,7.300987,urban,,urban
+403,maisondesjeunesbatangafo,Site Maison des jeunes,Batangafo,maisondesjeunes _ Batangafo,#N/A,,18.285135,7.300987,urban,,urban
+404,ndouboubatangafo,Ndoubou,Batangafo,ndoubou _ Batangafo,#N/A,,18.3209,7.3141,rural,,rural
+405,batangafobatangafo,Cit<e9> aerodrome,Batangafo,batangafo _ Batangafo,Urban,,,,,,Urban
+406,gbazarabatangafo,Gbazara,Batangafo,gbazara _ Batangafo,Rural,,,,,,Rural
+407,botongobatangafo,Bofondo,Batangafo,botongo _ Batangafo,Rural,,,,,,Rural
+408,bobazibatangafo,Bobazi,Batangafo,bobazi _ Batangafo,Rural,,,,,,Rural
+409,bogbafiobatangafo,Bogbofio,Batangafo,bogbafio _ Batangafo,Urban,,,,,,Urban
+410,bolhom1batangafo,Bolhom1,Batangafo,bolhom1 _ Batangafo,Rural,,,,,,Rural
+411,bodeabatangafo,Bodea,Batangafo,bodea _ Batangafo,Rural,,,,,,Rural
+412,gbadenebatangafo,Gbadene,Batangafo,gbadene _ Batangafo,#N/A,,18.338992,7.151558,rural,,rural
+413,yalokeyaloke,Yaloke,Yaloke,yaloke _ Yaloke,Urban,,,,,,Urban
+414,bohoyaloke,Boho,Yaloke,boho _ Yaloke,Rural,,,,,,Rural
+415,gagayaloke,Gaga,Yaloke,gaga _ Yaloke,Rural,,,,,,Rural
+416,bongbalo1yaloke,Bongbalo 1,Yaloke,bongbalo1 _ Yaloke,Rural,,,,,,Rural
+417,bokede1yaloke,Bokede 1,Yaloke,bokede1 _ Yaloke,Rural,,,,,,Rural
+418,bossemboubouyaloke,Bossemboubou,Yaloke,bossemboubou _ Yaloke,Rural,,,,,,Rural
+419,badangafouyaloke,Badangafou,Yaloke,badangafou _ Yaloke,Rural,,,,,,Rural
+420,bongbarayaloke,Bobara2,Yaloke,bongbara _ Yaloke,Rural,,,,,,Rural
+421,bogalibossembele,Bogali,Bossembele,bogali _ Bossembele,Rural,,,,,,Rural
+422,ndjobossembele,Ndjo,Bossembele,ndjo _ Bossembele,Rural,,,,,,Rural
+423,bossogbien1bossembele,Bossogbien1,Bossembele,bossogbien1 _ Bossembele,Rural,,,,,,Rural
+424,bondio2bossembele,Bodjo2,Bossembele,bondio2 _ Bossembele,Rural,,,,,,Rural
+425,bossembelebossembele,Bossembele,Bossembele,bossembele _ Bossembele,Urban,,,,,,Urban
+426,bogbalokobossembele,Bogbaloko,Bossembele,bogbaloko _ Bossembele,Rural,,,,,,Rural
+427,bodoukpa2bossembele,Bodoukpa 2,Bossembele,bodoukpa2 _ Bossembele,Rural,,,,,,Rural
+428,bogoin1bossembele,Bogoein1,Bossembele,bogoin1 _ Bossembele,Rural,,,,,,Rural
+429,djembecarnot,Djembe,Carnot,djembe _ Carnot,Urban,,,,,,Urban
+430,carnotcarnot,Carnot,Carnot,carnot _ Carnot,Urban,,,,,,Urban
+431,ngbabokocarnot,Ngbaboko,Carnot,ngbaboko _ Carnot,Rural,,,,,,Rural
+432,ngogbaracarnot,Ngoubara,Carnot,ngogbara _ Carnot,Rural,,,,,,Rural
+433,ganlicarnot,Ganli,Carnot,ganli _ Carnot,Rural,,,,,,Rural
+434,beyelecarnot,Beyele,Carnot,beyele _ Carnot,Rural,,,,,,Rural
+435,kpokolitacarnot,KPOKOLITA PK5,Carnot,kpokolita _ Carnot,#N/A,,15.91332,4.96084,rural,GPS from RRM,rural
+436,degbe-mainacarnot,Degbe Ma<ef>na,Carnot,degbe-maina _ Carnot,Rural,,,,,,Rural
+437,meyecarnot,MEYE,Carnot,meye _ Carnot,#N/A,,15.8685,4.94,urban,quartier carnot,urban
+438,mbainagadzi,Mbaina,Gadzi,mbaina _ Gadzi,Rural,,,,,,Rural
+439,mayakagadzi,Mayaka,Gadzi,mayaka _ Gadzi,Urban,,,,,,Urban
+440,bakalagadzi,Bakara,Gadzi,bakala _ Gadzi,Rural,,,,,,Rural
+441,gadzigadzi,Gadzi,Gadzi,gadzi _ Gadzi,Rural,,,,,,Rural
+442,guengadzi,Guen,Gadzi,guen _ Gadzi,Urban,,,,,,Urban
+443,ngabouagadzi,Ngaboua,Gadzi,ngaboua _ Gadzi,Rural,,,,,,Rural
+444,ndinguirigadzi,Ndinguiri,Gadzi,ndinguiri _ Gadzi,Urban,,,,,,Urban
+445,nangokogamboula,Nangoko,Gamboula,nangoko _ Gamboula,Urban,,,,,,Urban
+446,dongogamboula,Dongo,Gamboula,dongo _ Gamboula,Rural,,,,,,Rural
+447,moussa-ngoegamboula,Moussa 2,Gamboula,moussa-ngoe _ Gamboula,Rural,,,,,,Rural
+448,korandogamboula,Korando,Gamboula,korando _ Gamboula,Rural,,,,,,Rural
+449,doubangagamboula,NDOUBANGA,Gamboula,doubanga _ Gamboula,Rural,,,,,,Rural
+450,nabimongamboula,NABINMON,Gamboula,nabimon _ Gamboula,Rural,,,,,,Rural
+451,mambelebambio,Mambele,Bambio,mambele _ Bambio,Urban,,,,,,Urban
+452,bounguelebambio,Bounguele,Bambio,bounguele _ Bambio,Rural,,,,,,Rural
+453,bangotobambio,Bangoto,Bambio,bangoto _ Bambio,Rural,,,,,,Rural
+454,bambiobambio,CENTRE BAMBIO,Bambio,bambio _ Bambio,#N/A,,17.0029,3.9252,urban,,urban
+455,batondeboganda,Batonde,Boganda,batonde _ Boganda,Rural,,,,,,Rural
+456,bodjoulaboganda,Bodjoula,Boganda,bodjoula _ Boganda,Rural,,,,,,Rural
+457,boganadoboganda,Boganado,Boganda,boganado _ Boganda,Rural,,,,,,Rural
+458,sanyeleboganda,Sanyele,Boganda,sanyele _ Boganda,Rural,,,,,,Rural
+459,yawaboganda,Yawa,Boganda,yawa _ Boganda,Rural,,,,,,Rural
+460,boyoboganda,Boyo,Boganda,boyo _ Boganda,Rural,,,,,,Rural
+461,babiliboganda,Babili,Boganda,babili _ Boganda,Rural,,,,,,Rural
+462,bidou1kembe,Bidou 1,Kembe,bidou1 _ Kembe,Rural,,,,,,Rural
+463,goualakembe, Ngouala 2,Kembe,gouala _ Kembe,Rural,,,,,,Rural
+464,gbama3kembe,Gbama 3,Kembe,gbama3 _ Kembe,Rural,,,,,,Rural
+465,bidou2kembe,Bidou 2,Kembe,bidou2 _ Kembe,Rural,,,,,,Rural
+466,kembekembe,Kembe,Kembe,kembe _ Kembe,Urban,,,,,,Urban
+467,benguerekembe,Benguere,Kembe,benguere _ Kembe,Rural,,,,,,Rural
+468,ngaliakembe,NGALIA,Kembe,ngalia _ Kembe,Rural,,,,,,Rural
+469,satemasatema,Satema centre,Satema,satema _ Satema,#N/A,,21.6837,4.3064,urban,,urban
+470,bandasatema,Banda,Satema,banda _ Satema,Rural,,,,,,Rural
+471,ngbando1satema,Ngbando 1,Satema,ngbando1 _ Satema,Rural,,,,,,Rural
+472,boungba1satema,Boungba 1,Satema,boungba1 _ Satema,Rural,,,,,,Rural
+473,deousatema,Deou,Satema,deou _ Satema,Rural,,,,,,Rural
+474,bobetemarkounda,Bobete,Markounda,bobete _ Markounda,Rural,,,,,,Rural
+475,bazolimarkounda,Bazoli,Markounda,bazoli _ Markounda,Rural,,,,,,Rural
+476,boukoyomarkounda,Boukoyo,Markounda,boukoyo _ Markounda,Rural,,,,,,Rural
+477,bodjomomarkounda,Bodjomo,Markounda,bodjomo _ Markounda,Urban,,,,,,Urban
+478,beferanmarkounda,Beferan,Markounda,beferan _ Markounda,Rural,,,,,,Rural
+479,boulomarkounda,Boulo,Markounda,boulo _ Markounda,Rural,,,,,,Rural
+480,birangamarkounda,Biranga,Markounda,biranga _ Markounda,Rural,,,,,,Rural
+481,bogalemarkounda,Bogale,Markounda,bogale _ Markounda,Rural,,,,,,Rural
+482,bakabamarkounda,Bakaba,Markounda,bakaba _ Markounda,Rural,,,,,,Rural
+483,ikoumbamongoumba,Ikoumba,Mongoumba,ikoumba _ Mongoumba,Rural,,,,,,Rural
+484,bomolotomongoumba,Bomoloto,Mongoumba,bomoloto _ Mongoumba,Rural,,,,,,Rural
+485,ivoromongoumba,Iwoko bassin,Mongoumba,ivoro _ Mongoumba,Rural,,,,,,Rural
+486,bossarangbamongoumba,Bossarangba,Mongoumba,bossarangba _ Mongoumba,Rural,,,,,,Rural
+487,ambauchuremongoumba,Ambauchure,Mongoumba,ambauchure _ Mongoumba,Rural,,,,,,Rural
+488,mongomongoumba,Mongo,Mongoumba,mongo _ Mongoumba,Rural,,,,,,Rural
+489,ngopamamongoumba,Ngopama,Mongoumba,ngopama _ Mongoumba,Rural,,,,,,Rural
+490,batalimomongoumba,Bobelet,Mongoumba,batalimo _ Mongoumba,Urban,,,,,,Urban
+491,bac-lobemongoumba,Bac-Lobe,Mongoumba,bac-lobe _ Mongoumba,Rural,,,,,,Rural
+492,ambangdede-mokouba,Ambang,Dede_Mokouba,ambang _ Dede-Mokouba,Urban,,,,,,Urban
+493,bagoudoudede-mokouba,Bagoudou,Dede_Mokouba,bagoudou _ Dede-Mokouba,Rural,,,,,,Rural
+494,dedemakoubadede-mokouba,Dede Makouba,Dede_Mokouba,dedemakouba _ Dede-Mokouba,Rural,,,,,,Rural
+495,mbikodede-mokouba,Mbiko,Dede_Mokouba,mbiko _ Dede-Mokouba,Rural,,,,,,Rural
+496,kambayekedede-mokouba,Kambayeke,Dede_Mokouba,kambayeke _ Dede-Mokouba,Rural,,,,,,Rural
+497,doridede-mokouba,Dori,Dede_Mokouba,dori _ Dede-Mokouba,Rural,,,,,,Rural
+498,binoumbidede-mokouba,Binoumbi,Dede_Mokouba,binoumbi _ Dede-Mokouba,Rural,,,,,,Rural
+499,bekodede-mokouba,Beko,Dede_Mokouba,beko _ Dede-Mokouba,Rural,,,,,,Rural
+500,sosso-nakombososso-nakombo,Sosso-Nakombo,Sosso_Nakombo,sosso-nakombo _ Sosso-Nakombo,Urban,,,,,,Urban
+501,nzembesosso-nakombo,Nzembe,Sosso_Nakombo,nzembe _ Sosso-Nakombo,Rural,,,,,,Rural
+502,wambilososso-nakombo,Wambilo,Sosso_Nakombo,wambilo _ Sosso-Nakombo,Rural,,,,,,Rural
+503,bena-doemososso-nakombo,Be<ef>na-Doemo,Sosso_Nakombo,beâ´na-doemo _ Sosso-Nakombo,Rural,,,,,,Rural
+504,ngandiososso-nakombo,Ngandio,Sosso_Nakombo,ngandio _ Sosso-Nakombo,Rural,,,,,,Rural
+505,koumbanola,Koumba,Nola,koumba _ Nola,Rural,,,,,,Rural
+506,bidjonola,Bidjo,Nola,bidjo _ Nola,Rural,,,,,,Rural
+507,baminanola,Bamina,Nola,bamina _ Nola,Rural,,,,,,Rural
+508,nalimonola,Nalimo,Nola,nalimo _ Nola,Rural,,,,,,Rural
+509,bakobonola,Bakobo,Nola,bakobo _ Nola,Rural,,,,,,Rural
+510,beyanola,Beya,Nola,beya _ Nola,Rural,,,,,,Rural
+511,belembokenola,Belemboke,Nola,belemboke _ Nola,Rural,,,,,,Rural
+512,belemboke4nola,Belemboke 4,Nola,belemboke4 _ Nola,Rural,,,,,,Rural
+513,domalenola,Domale,Nola,domale _ Nola,Rural,,,,,,Rural
+514,koropekeboganangone,Koropeke,Boganangone,koropeke _ Boganangone,Rural,,,,,,Rural
+515,bologuiboganangone,Bologui,Boganangone,bologui _ Boganangone,Rural,,,,,,Rural
+516,bekagomiboganangone,Bekagomi,Boganangone,bekagomi _ Boganangone,Rural,,,,,,Rural
+517,zackaboganangone,Zacka,Boganangone,zacka _ Boganangone,Rural,,,,,,Rural
+518,bogotoboganangone,Bogoto,Boganangone,bogoto _ Boganangone,Rural,,,,,,Rural
+519,boganangoneboganangone,Boganangone,Boganangone,boganangone _ Boganangone,Rural,,,,,,Rural
+520,bekagbassemboganangone,Bekagbassem,Boganangone,bekagbassem _ Boganangone,Rural,,,,,,Rural
+521,bogueraboganangone,Boguera,Boganangone,boguera _ Boganangone,Urban,,,,,,Urban
+522,bodaboda,Boda,Boda,boda _ Boda,Urban,,,,,,Urban
+523,poutemboda,Poutem,Boda,poutem _ Boda,Rural,,,,,,Rural
+524,bagouaboda,Bagoua,Boda,bagoua _ Boda,Rural,,,,,,Rural
+525,samandoroboda,Bomandoro,Boda,samandoro _ Boda,Rural,,,,,,Rural
+526,bataliboda,Batali,Boda,batali _ Boda,Rural,,,,,,Rural
+527,bombaleboda,Bombale,Boda,bombale _ Boda,Rural,,,,,,Rural
+528,keli1boda,Kel<e9> 2,Boda,keli1 _ Boda,Rural,,,,,,Rural
+529,ngottoboda,Ngotto,Boda,ngotto _ Boda,Urban,,,,,,Urban
+530,unknown20boda,Le village s'appelle Bodjoula,Boda,unknown20 _ Boda,Rural,,,,,,Rural
+531,bombo1amada-gaza,Bombo 1,Amada_Gaza,bombo1 _ Amada-Gaza,Rural,,,,,,Rural
+532,gbambiaamada-gaza,Gbambia,Amada_Gaza,gbambia _ Amada-Gaza,Rural,,,,,,Rural
+533,amada-gazaamada-gaza,Amada-Gaza,Amada_Gaza,amada-gaza _ Amada-Gaza,Urban,,,,,,Urban
+534,bobayokoamada-gaza,Bobayoko,Amada_Gaza,bobayoko _ Amada-Gaza,Rural,,,,,,Rural
+535,ngabongoamada-gaza,Ngabongo,Amada_Gaza,ngabongo _ Amada-Gaza,Rural,,,,,,Rural
+536,monassaobayanga,Monassao,Bayanga,monassao _ Bayanga,Rural,,,,,,Rural
+537,babongobayanga,Babongo,Bayanga,babongo _ Bayanga,Rural,,,,,,Rural
+538,bayangabayanga,Bomitaba2,Bayanga,bayanga _ Bayanga,Urban,,,,,,Urban
+539,bomandjoukoubayanga,Bomandjoukou,Bayanga,bomandjoukou _ Bayanga,Urban,,,,,,Urban
+540,lidjombobayanga,Lidjombo,Bayanga,lidjombo _ Bayanga,Rural,,,,,,Rural
+541,boganli1bogangolo,Boganli 1,Bogangolo,boganli1 _ Bogangolo,Rural,,,,,,Rural
+542,bobanbogangolo,Boban,Bogangolo,boban _ Bogangolo,Rural,,,,,,Rural
+543,bogangolobogangolo,Bogangolo,Bogangolo,bogangolo _ Bogangolo,Rural,,,,,,Rural
+544,gbanlibogangolo,Gbanli,Bogangolo,gbanli _ Bogangolo,Rural,,,,,,Rural
+545,bobinguibogangolo,Bobingui,Bogangolo,bobingui _ Bogangolo,Rural,,,,,,Rural
+546,bodouabogangolo,Bodoua,Bogangolo,bodoua _ Bogangolo,Rural,,,,,,Rural
+,bogombobogangolo,Bogombo,Bogangolo,bogombo _ Bogangolo,Rural,,,,,,Rural

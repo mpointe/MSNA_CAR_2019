@@ -1,0 +1,23 @@
+vars,repeat_var,disaggregation,rank_1,rank_2,rank_3,percent_1,percent_2,percent_3
+educ_5_ecole_acces_1 educ_5_ecole_acces_2 educ_5_ecole_acces_3,admin_0,homme,financier,autre,aucune,22.2%,12.9%,12.6%
+educ_5_ecole_acces_1 educ_5_ecole_acces_2 educ_5_ecole_acces_3,admin_0,femme,financier,autre,aucune,23.5%,11.8%,11.2%
+wash_22_wash_reponse_1 wash_22_wash_reponse_2 wash_22_wash_reponse_3,admin_0,homme,cash_recipient_eau,cash_infra,cash_hygiene,19.5%,16.2%,14.8%
+wash_22_wash_reponse_1 wash_22_wash_reponse_2 wash_22_wash_reponse_3,admin_0,femme,cash_recipient_eau,cash_infra,cash_hygiene,20.1%,15.8%,15.8%
+mssc_2_source_rev_1 mssc_2_source_rev_2 mssc_2_source_rev_3,admin_0,homme,agric,petit_commerce,pche,27.5%,19.4%,10.6%
+mssc_2_source_rev_1 mssc_2_source_rev_2 mssc_2_source_rev_3,admin_0,femme,agric,petit_commerce,jtt_agric,29.8%,25.5%,8.44%
+wash_9_insuff_raisons_1 wash_9_insuff_raisons_2 wash_9_insuff_raisons_3,admin_0,homme,manque_recip,attente_longue,distance,24.2%,17.0%,16.4%
+wash_9_insuff_raisons_1 wash_9_insuff_raisons_2 wash_9_insuff_raisons_3,admin_0,femme,manque_recip,attente_longue,distance,25.0%,17.5%,15.4%
+nfi_7_assistance_1 nfi_7_assistance_2 nfi_7_assistance_3,admin_0,homme,argent_nfi_essentiels,argent_materiel,provision_nfi_essentiels,18.0%,16.0%,15.7%
+nfi_7_assistance_1 nfi_7_assistance_2 nfi_7_assistance_3,admin_0,femme,argent_materiel,argent_nfi_essentiels,provision_abri,18.5%,14.7%,13.8%
+educ_6_reponse_1 educ_6_reponse_2 educ_6_reponse_3,admin_0,homme,cash_frais,cash_fournitures,prov_fournitures,20.9%,18.4%,15.7%
+educ_6_reponse_1 educ_6_reponse_2 educ_6_reponse_3,admin_0,femme,cash_frais,prov_fournitures,cash_fournitures,20.6%,17.6%,16.6%
+rep_souhaitee_1 rep_souhaitee_2 rep_souhaitee_3,admin_0,homme,secal,wash,sante,26.1%,22.7%,21.7%
+rep_souhaitee_1 rep_souhaitee_2 rep_souhaitee_3,admin_0,femme,secal,wash,sante,26.6%,22.2%,21.4%
+secal_13_reponse_1 secal_13_reponse_2 secal_13_reponse_3,admin_0,homme,cash_nourrit,cash_intrant_agri,cash_nfi,21.2%,18.9%,14.7%
+secal_13_reponse_1 secal_13_reponse_2 secal_13_reponse_3,admin_0,femme,cash_nourrit,cash_intrant_agri,cash_nfi,23.0%,17.7%,16.2%
+sante_7_reponse_1 sante_7_reponse_2 sante_7_reponse_3,admin_0,homme,prov_medicament,cash_frais_med,acces_staff_cs,19.6%,16.8%,14.1%
+sante_7_reponse_1 sante_7_reponse_2 sante_7_reponse_3,admin_0,femme,prov_medicament,cash_frais_med,acces_staff_cs,20.5%,16.7%,14.2%
+wash_15_insuff_raisons_1 wash_15_insuff_raisons_2 wash_15_insuff_raisons_3,admin_0,homme,quantite_insuff,hygiene_insuff,mixte,24.8%,23.2%,16.5%
+wash_15_insuff_raisons_1 wash_15_insuff_raisons_2 wash_15_insuff_raisons_3,admin_0,femme,quantite_insuff,hygiene_insuff,qualite_insuff,24.9%,21.5%,15.8%
+wash_21_wash_inquiet_1 wash_21_wash_inquiet_2 wash_21_wash_inquiet_3,admin_0,homme,eau,sanitaire,environment,34.4%,23.0%,20.1%
+wash_21_wash_inquiet_1 wash_21_wash_inquiet_2 wash_21_wash_inquiet_3,admin_0,femme,eau,sanitaire,environment,34.0%,22.8%,20.9%

@@ -1,0 +1,72 @@
+source("functions/borda_count.R")
+#### TO BE MODIFIED
+#df_hh <- read.csv(paste0("./output/REACH_CAR_dataset_HH_MSNA_20191210.csv"), stringsAsFactors = FALSE)
+df_hh <- read.csv("output/REACH_CAR_dataset_HH_MSNA_20191212_weights_ok.csv", stringsAsFactors = FALSE)
+
+
+borda_script_template <- read_csv("input/borda_analysis.csv")
+
+borda_script_admin0 <- borda_script_template%>%
+  mutate(
+    disaggregate = NA,
+    repeat_var = "admin_0"
+  )
+
+borda_applier(borda_script_admin0, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin0.csv",
+            na = "")
+
+
+borda_script_admin0_grp <- borda_script_template%>%
+  mutate(
+    disaggregate = "ig_8_statut_groupe",
+    repeat_var = "admin_0"
+  )
+
+borda_applier(borda_script_admin0_grp, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin0_grp.csv",
+            na = "")
+
+
+borda_script_admin1 <- borda_script_template%>%
+  mutate(
+    disaggregate = NA,
+    repeat_var = "admin_1"
+         )
+
+borda_applier(borda_script_admin1, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin1.csv",
+            na = "")
+
+borda_script_admin1_grp <- borda_script_template%>%
+  mutate(
+    disaggregate = "ig_8_statut_groupe",
+    repeat_var = "admin_1"
+  )
+
+borda_applier(borda_script_admin1_grp, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin1_grp.csv",
+            na = "")
+
+
+borda_script_admin2 <- borda_script_template%>%
+  mutate(
+    disaggregate = NA,
+    repeat_var = "admin_2"
+  )
+
+borda_applier(borda_script_admin2, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin2.csv",
+            na = "")
+
+
+borda_script_admin0_sex <- borda_script_template%>%
+  mutate(
+    disaggregate = "sexe_chef_menage",
+    repeat_var = "admin_0"
+  )
+
+borda_applier(borda_script_admin0_sex, df_hh, weighting_function = weighting_combined) %>% 
+  write_csv("output/borda/borda_admin0_sexHHD.csv",
+            na = "")
+

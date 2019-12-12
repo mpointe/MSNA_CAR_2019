@@ -1,0 +1,1284 @@
+# setup
+library(dplyr)
+library(readr)
+library(tidyr)
+library(koboquest) # manage kobo questionnairs
+library(parallel) # mclapply
+library(kobostandards) # check inputs for inconsistencies
+#devtools::install_github('mabafaba/kobostandards') 
+library(xlsformfill) # generate fake data for kobo
+#devtools::install_github('mabafaba/xlsformfill') 
+library(hypegrammaR) # stats 4 complex samples
+#devtools::install_github('ellieallien/hypegrammaR') 
+library(composr) # horziontal operations
+#devtools::install_github('mabafaba/composr') 
+library(parallel)
+library(knitr)
+library(surveyweights)
+library(stringr)
+library(srvyr)
+#source("functions/to_alphanumeric_lowercase.R") # function to standardise column headers (like check.names)
+source("functions/analysisplan_factory.R")  # generate analysis plans
+source("functions/remove_responses_from_sumstat.R")  # generate analysis plans
+source("functions/format_hypothesis_test.R")
+### source("SOME_NGA_SPECIFIC_FUNCTIONS")
+
+#### READING LATEST DATAFRAME FROM TODAY!!
+# response_updated_cluster <- read.csv(paste0("./output/REACH_CAR_dataset_HH_MSNA_", format(Sys.time(), "%Y%m%d"),".csv"), stringsAsFactors = FALSE)
+response_updated_cluster <- read.csv(paste0("./output/REACH_CAR_dataset_HH_MSNA_20191209_weights_ok.csv"), stringsAsFactors = FALSE)
+
+response_updated_cluster <- response_updated_cluster%>%
+  mutate(
+    sum_educ_2_inscrit_18_19.total= rowSums(select(.,starts_with("sum_educ_2_inscrit_18_19.")), na.rm = T),
+    sum_educ_2_inscrit_18_19.filles = rowSums(select(.,starts_with("sum_educ_2_inscrit_18_19.filles")), na.rm = T),
+    sum_educ_2_inscrit_18_19.garcons = rowSums(select(.,starts_with("sum_educ_2_inscrit_18_19.garcons")),na.rm = T),
+    
+    sum_educ_2_inscrit_18_19.filles_7_12 = rowSums(select(.,sum_educ_2_inscrit_18_19.filles_7_12), na.rm = T),
+    sum_educ_2_inscrit_18_19.filles_13_18 = rowSums(select(.,sum_educ_2_inscrit_18_19.filles_13_18), na.rm = T),
+    sum_educ_2_inscrit_18_19.garcons_7_12 = rowSums(select(.,sum_educ_2_inscrit_18_19.garcons_7_12), na.rm = T),
+    sum_educ_2_inscrit_18_19.garcons_13_18 = rowSums(select(.,sum_educ_2_inscrit_18_19.garcons_13_18), na.rm=T),
+
+    sum_educ_3_presence_18_19.total.0m = rowSums(select(.,ends_with(".0m")), na.rm = T),
+    sum_educ_3_presence_18_19.total.0m_3m = rowSums(select(.,ends_with("0m_3m")), na.rm = T),
+    sum_educ_3_presence_18_19.total.12m = rowSums(select(.,ends_with(".12m")), na.rm = T),
+    sum_educ_3_presence_18_19.total.3m_6m = rowSums(select(.,ends_with("3m_6m")), na.rm = T),
+    sum_educ_3_presence_18_19.total.6m_12m = rowSums(select(.,ends_with("6m_12m")), na.rm = T),
+    
+    sum_educ_3_presence_18_19.filles.0m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.filles.*0m$")), na.rm = T) ,
+    sum_educ_3_presence_18_19.filles.0m_3m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.filles.*0m_3m$")), na.rm = T),
+    #sum_educ_3_presence_18_19.filles.12m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.filles.*.12m$")), na.rm = T),
+    sum_educ_3_presence_18_19.filles.12m = rowSums(select(.,"sum_educ_3_presence_18_19.filles_7_12.12m", "sum_educ_3_presence_18_19.filles_13_18.12m"), na.rm = T),
+    sum_educ_3_presence_18_19.filles.3m_6m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.filles.*3m_6m$")), na.rm = T),
+    sum_educ_3_presence_18_19.filles.6m_12m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.filles.*6m_12m$")), na.rm = T),
+    
+    sum_educ_3_presence_18_19.garcons.0m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.garcons.*0m$")), na.rm = T),
+    sum_educ_3_presence_18_19.garcons0m_3m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.garcons.*0m_3m$")), na.rm = T),
+    sum_educ_3_presence_18_19.garcons.12m = rowSums(select(.,"sum_educ_3_presence_18_19.garcons_7_12.12m", "sum_educ_3_presence_18_19.garcons_13_18.12m"), na.rm = T),
+    sum_educ_3_presence_18_19.garcons.3m_6m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.garcons.*3m_6m$")), na.rm = T),
+    sum_educ_3_presence_18_19.garcons.6m_12m = rowSums(select(.,matches("^sum_educ_3_presence_18_19.garcons.*6m_12m")), na.rm = T),
+    
+    school_age_enfants_7_18 = rowSums(select(.,sum_agegrp_7_12_filles, sum_agegrp_13_18_filles,
+                                             sum_agegrp_7_12_garcons, sum_agegrp_13_18_garcons), na.rm = T),
+    school_age_filles = rowSums(select(.,sum_agegrp_7_12_filles, sum_agegrp_13_18_filles), na.rm = T),
+    school_age_garcons = rowSums(select(.,sum_agegrp_7_12_garcons, sum_agegrp_13_18_garcons), na.rm = T),
+    membres_tot = rowSums(select(.,sum_agegrp_0_17_tot,sum_agegrp_18_59_tot, sum_agegrp_59plus_tot ), na.rm = T)
+    )
+
+# template_analysisplan_file <- "./input/analysisplan_template_add.csv"
+
+# template_df <- read.csv(template_analysisplan_file, stringsAsFactors = F)
+
+freq_admin0 <- response_updated_cluster %>%
+  summarise(
+    freq_school_age_filles = sum(school_age_filles * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_school_age_garcons = sum(school_age_garcons * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+
+    
+    freq_educ_2_inscrit_18_19.filles_OverTotalInscrit = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_OverTotalInscrit = sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T),
+    
+    
+    
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m * weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+  
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  gather(key = "variable", value= "percent")
+
+# write.csv(freq_admin0, paste0("./output/freq/freq_admin0_.csv"))
+write.csv(freq_admin0, paste0("./output/freq/","freq_admin0_",format(Sys.time(), "%Y%m%d"),".csv")
+)
+
+
+freq_admin0grp <- response_updated_cluster %>%
+  group_by(ig_8_statut_groupe )%>%
+  summarise(
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m* weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  gather(key = "variable", value= "percent", - ig_8_statut_groupe)
+
+# write.csv(freq_admin0grp, paste0("./output/freq/freq_admin0grp_.csv"))
+write.csv(freq_admin0grp, paste0("./output/freq/","freq_admin0grp_",format(Sys.time(), "%Y%m%d"),".csv"))
+          
+
+freq_admin1 <- response_updated_cluster %>%
+  group_by(admin_1)%>%
+  summarise(
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m* weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  ungroup()%>%
+  gather(key = "variable", value= "percent",-admin_1)
+
+# write.csv(freq_admin1, paste0("./output/freq/freq_admin1_.csv"))
+write.csv(freq_admin1, paste0("./output/freq/","freq_admin1_",format(Sys.time(), "%Y%m%d"),".csv"))
+
+
+freq_admin1grp <- response_updated_cluster %>%
+  group_by(admin_1, ig_8_statut_groupe )%>%
+  summarise(
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m* weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  gather(key = "variable", value= "percent", -admin_1, -ig_8_statut_groupe)
+
+# write.csv(freq_admin1grp, paste0("./output/freq/freq_admin1grp_.csv"))
+write.csv(freq_admin1grp, paste0("./output/freq/","freq_admin1grp_",format(Sys.time(), "%Y%m%d"),".csv"))
+# 
+# response_updated_cluster = subset(response_updated_cluster, response_updated_cluster$admin2_labels == "Bangui")
+# response_updated_cluster$admin_2 = if_else(response_updated_cluster$localite_final_labels_admin2 == "bangui3ebangui", "Bangui_3e", "Bangui_245678e")
+
+freq_admin2 <- response_updated_cluster %>%
+  group_by(admin_2 )%>%
+  summarise(
+    
+    
+    freq_educ_2_inscrit_18_19.filles_OverTotalInscrit = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_OverTotalInscrit = sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T),
+    
+    
+    
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m* weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  gather(key = "variable", value= "percent", -admin_2)
+
+# write.csv(freq_admin2, paste0("./output/freq/freq_admin2_.csv"))
+write.csv(freq_admin2, paste0("./output/freq/","freq_admin2_",format(Sys.time(), "%Y%m%d"),".csv"))
+
+freq_admin0_sexHHD <- response_updated_cluster %>%
+  group_by(sexe_chef_menage )%>%
+  summarise(
+    freq_educ_2_inscrit_18_19.total= sum(sum_educ_2_inscrit_18_19.total * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles = sum(sum_educ_2_inscrit_18_19.filles * weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons =  sum(sum_educ_2_inscrit_18_19.garcons * weights_sampling, na.rm = T)/ sum(school_age_garcons * weights_sampling, na.rm = T),
+    
+    freq_educ_2_inscrit_18_19.filles_7_12 = sum(sum_educ_2_inscrit_18_19.filles_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.filles_13_18 = sum(sum_educ_2_inscrit_18_19.filles_13_18 * weights_sampling, na.rm = T)/ sum(sum_agegrp_13_18_filles * weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_7_12 = sum(sum_educ_2_inscrit_18_19.garcons_7_12 * weights_sampling, na.rm = T)/ sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_2_inscrit_18_19.garcons_13_18 = sum(sum_educ_2_inscrit_18_19.garcons_13_18 * weights_sampling, na.rm =T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    
+    freq_educ_3_presence_18_19.total.0m = sum(sum_educ_3_presence_18_19.total.0m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.0m_3m = sum(sum_educ_3_presence_18_19.total.0m_3m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.12m = sum(sum_educ_3_presence_18_19.total.12m * weights_sampling, na.rm=T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.3m_6m = sum(sum_educ_3_presence_18_19.total.3m_6m * weights_sampling, na.rm = T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.total.6m_12m = sum(sum_educ_3_presence_18_19.total.6m_12m* weights_sampling, na.rm =T) / sum(school_age_enfants_7_18 * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles.0m = sum(sum_educ_3_presence_18_19.filles.0m* weights_sampling, na.rm=T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.0m_3m = sum(sum_educ_3_presence_18_19.filles.0m_3m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.12m = sum(sum_educ_3_presence_18_19.filles.12m* weights_sampling, na.rm =T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.3m_6m = sum(sum_educ_3_presence_18_19.filles.3m_6m* weights_sampling, na.rm = T) / sum(school_age_filles * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles.6m_12m = sum(sum_educ_3_presence_18_19.filles.6m_12m* weights_sampling, na.rm = T)/ sum(school_age_filles * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons.0m = sum(sum_educ_3_presence_18_19.garcons.0m* weights_sampling, na.rm = T)/ sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons0m_3m =sum( sum_educ_3_presence_18_19.garcons0m_3m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.12m = sum(sum_educ_3_presence_18_19.garcons.12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.3m_6m = sum(sum_educ_3_presence_18_19.garcons.3m_6m* weights_sampling, na.rm=T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons.6m_12m = sum(sum_educ_3_presence_18_19.garcons.6m_12m* weights_sampling, na.rm = T) / sum((sum_agegrp_7_12_garcons+sum_agegrp_13_18_garcons) * weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_13_18.0m = sum(sum_educ_3_presence_18_19.filles_13_18.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.0m_3m = sum(sum_educ_3_presence_18_19.filles_13_18.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.3m_6m = sum(sum_educ_3_presence_18_19.filles_13_18.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_filles* weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_13_18.6m_12m = sum(sum_educ_3_presence_18_19.filles_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_13_18.12m = sum(sum_educ_3_presence_18_19.filles_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.filles_7_12.0m = sum(sum_educ_3_presence_18_19.filles_7_12.0m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.0m_3m = sum(sum_educ_3_presence_18_19.filles_7_12.0m_3m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.3m_6m = sum(sum_educ_3_presence_18_19.filles_7_12.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.filles_7_12.6m_12m = sum(sum_educ_3_presence_18_19.filles_7_12.6m_12m*weights_sampling, na.rm =T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.filles_7_12.12m = sum(sum_educ_3_presence_18_19.filles_7_12.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_filles*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_13_18.0m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m*weights_sampling, na.rm=T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_13_18.0m_3m = sum(sum_educ_3_presence_18_19.garcons_13_18.0m_3m*weights_sampling, na.rm =T) /sum( sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.3m_6m = sum(sum_educ_3_presence_18_19.garcons_13_18.3m_6m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.6m_12m = sum(sum_educ_3_presence_18_19.garcons_13_18.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_13_18.12m = sum(sum_educ_3_presence_18_19.garcons_13_18.12m*weights_sampling, na.rm = T) / sum(sum_agegrp_13_18_garcons*weights_sampling, na.rm = T),
+    
+    freq_educ_3_presence_18_19.garcons_7_12.0m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m*weights_sampling,na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.0m_3m = sum(sum_educ_3_presence_18_19.garcons_7_12.0m_3m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.3m_6m = sum(sum_educ_3_presence_18_19.garcons_7_12.3m_6m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    freq_educ_3_presence_18_19.garcons_7_12.6m_12m = sum(sum_educ_3_presence_18_19.garcons_7_12.6m_12m*weights_sampling, na.rm = T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm = T),
+    freq_educ_3_presence_18_19.garcons_7_12.12m = sum(sum_educ_3_presence_18_19.garcons_7_12.12m*weights_sampling, na.rm=T) / sum(sum_agegrp_7_12_garcons*weights_sampling, na.rm=T),
+    
+    freq_ig_7_gr_vulnerable.aucune = sum(sum_ig_7_gr_vulnerable.aucune*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.ena = sum(sum_ig_7_gr_vulnerable.ena*weights_sampling, na.rm = T)/ sum(membres_tot*weights_sampling, na.rm=T),
+    freq_ig_7_gr_vulnerable.es = sum(sum_ig_7_gr_vulnerable.es*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fa = sum(sum_ig_7_gr_vulnerable.fa*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.fe = sum(sum_ig_7_gr_vulnerable.fe*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi = sum(sum_ig_7_gr_vulnerable.handi*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_ment = sum(sum_ig_7_gr_vulnerable.handi_ment*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.handi_phy = sum(sum_ig_7_gr_vulnerable.handi_phy*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_ig_7_gr_vulnerable.nsp = sum(sum_ig_7_gr_vulnerable.nsp*weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_femmes = sum((sum_agegrp_0_17_femmes + sum_agegrp_18_59_femmes + sum_agegrp_59plus_femmes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_hommes = sum((sum_agegrp_0_17_hommes + sum_agegrp_18_59_hommes + sum_agegrp_59plus_hommes) * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    
+    freq_agegrp_0_17 = sum(sum_agegrp_0_17_tot * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_femmes = sum(sum_agegrp_0_17_femmes * weights_sampling, na.rm = T) / sum(membres_tot*weights_sampling, na.rm = T),
+    freq_agegrp_0_17_hommes = sum(sum_agegrp_0_17_hommes * weights_sampling, na.rm = T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_18_59 = sum(sum_agegrp_18_59_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_femmes = sum(sum_agegrp_18_59_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_18_59_hommes = sum(sum_agegrp_18_59_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_agegrp_59plus = sum(sum_agegrp_59plus_tot * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_femmes = sum(sum_agegrp_59plus_femmes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    freq_agegrp_59plus_hommes = sum(sum_agegrp_59plus_hommes * weights_sampling, na.rm =  T) /sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui = sum(sum_sante_2_malade_oui * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_non = sum(sum_sante_2_malade_non * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    freq_sante_2_malade_nsp = sum(sum_sante_2_malade_nsp * weights_sampling, na.rm =  T) / sum(membres_tot * weights_sampling, na.rm = T),
+    
+    freq_sante_2_malade_oui_0_5_filles = sum(sum_sante_2_malade_oui_0_5_filles * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_2_malade_oui_0_5_garcons = sum(sum_sante_2_malade_oui_0_5_garcons * weights_sampling, na.rm =  T) / sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_2_soin_recu_oui_autre = sum(sum_sante_2_soin_recu_oui_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_cs = sum(sum_sante_2_soin_recu_oui_cs * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_oui_maison = sum(sum_sante_2_soin_recu_oui_maison * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    freq_sante_2_soin_recu_non = sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm=T)/sum(sum_sante_2_malade_oui * weights_sampling, na.rm = T),
+    
+    freq_sante_3_soin_non_recu_non_autre = sum(sum_sante_3_soin_non_recu_non_autre * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_ca = sum(sum_sante_3_soin_non_recu_infra_detruite_ca * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_detruite_nat = sum(sum_sante_3_soin_non_recu_infra_detruite_nat * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_inexis =  sum(sum_sante_3_soin_non_recu_infra_inexis * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_infra_trop_loin = sum(sum_sante_3_soin_non_recu_infra_trop_loin * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_insecurite = sum(sum_sante_3_soin_non_recu_insecurite * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_medic_indisp = sum(sum_sante_3_soin_non_recu_medic_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_nsp = sum(sum_sante_3_soin_non_recu_nsp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_qualite_trop_faible = sum(sum_sante_3_soin_non_recu_qualite_trop_faible * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_staff_indisp = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    freq_sante_3_soin_non_recu_trop_cher = sum(sum_sante_3_soin_non_recu_staff_indisp * weights_sampling, na.rm=T)/sum(sum_sante_2_soin_recu_non * weights_sampling, na.rm = T),
+    
+    freq_sante_4_0_4_malades_autre_filles = sum(sum_sante_4_0_4_malades_autre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_autre_garcons = sum(sum_sante_4_0_4_malades_autre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_filles = sum(sum_sante_4_0_4_malades_diarrhee_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_diarrhee_garcons = sum(sum_sante_4_0_4_malades_diarrhee_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_filles = sum(sum_sante_4_0_4_malades_toux_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_toux_garcons = sum(sum_sante_4_0_4_malades_toux_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_filles = sum(sum_sante_4_0_4_malades_fievre_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_fievre_garcons = sum(sum_sante_4_0_4_malades_fievre_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_filles = sum(sum_sante_4_0_4_malades_oui_nsp_filles * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_femmes * weights_sampling, na.rm = T),
+    freq_sante_4_0_4_malades_oui_nsp_garcons = sum(sum_sante_4_0_4_malades_oui_nsp_garcons * weights_sampling, na.rm = T)/ sum(sum_agegrp_0_4_hommes * weights_sampling, na.rm = T),
+    
+    freq_sante_5_5plus_malades.palu_femmes_5_17 = sum(sum_sante_5_5plus_malades.palu_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_femmes_18plus=sum(sum_sante_5_5plus_malades.palu_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_5_17 = sum(sum_sante_5_5plus_malades.palu_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.palu_garcons_18plus = sum(sum_sante_5_5plus_malades.palu_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_femmes_18plus = sum(sum_sante_5_5plus_malades.infec_resp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_5_17 = sum(sum_sante_5_5plus_malades.infec_resp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.infec_resp_garcons_18plus = sum(sum_sante_5_5plus_malades.infec_resp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_femmes_18plus = sum(sum_sante_5_5plus_malades.diarrhee_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_5_17 = sum(sum_sante_5_5plus_malades.diarrhee_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.diarrhee_garcons_18plus = sum(sum_sante_5_5plus_malades.diarrhee_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_5_17 = sum(sum_sante_5_5plus_malades.rougeole_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_femmes_18plus = sum(sum_sante_5_5plus_malades.rougeole_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_5_17 = sum(sum_sante_5_5plus_malades.rougeole_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.rougeole_garcons_18plus = sum(sum_sante_5_5plus_malades.rougeole_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_5_17 =   sum(sum_sante_5_5plus_malades.hepat_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_femmes_18plus = sum(sum_sante_5_5plus_malades.hepat_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_5_17 = sum(sum_sante_5_5plus_malades.hepat_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.hepat_garcons_18plus = sum(sum_sante_5_5plus_malades.hepat_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_5_17 = sum(sum_sante_5_5plus_malades.cholera_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_femmes_18plus = sum(sum_sante_5_5plus_malades.cholera_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_5_17 = sum(sum_sante_5_5plus_malades.cholera_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.cholera_garcons_18plus = sum(sum_sante_5_5plus_malades.cholera_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_femmes_18plus = sum(sum_sante_5_5plus_malades.vih_sida_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_5_17 = sum(sum_sante_5_5plus_malades.vih_sida_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.vih_sida_garcons_18plus = sum(sum_sante_5_5plus_malades.vih_sida_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_5_17 = sum(sum_sante_5_5plus_malades.mening_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_femmes_18plus = sum(sum_sante_5_5plus_malades.mening_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_5_17 = sum(sum_sante_5_5plus_malades.mening_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.mening_garcons_18plus = sum(sum_sante_5_5plus_malades.mening_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_5_17 = sum(sum_sante_5_5plus_malades.autre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_femmes_18plus = sum(sum_sante_5_5plus_malades.autre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_5_17 =sum(sum_sante_5_5plus_malades.autre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.autre_garcons_18plus = sum(sum_sante_5_5plus_malades.autre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_5_17 = sum(sum_sante_5_5plus_malades.nsp_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_femmes_18plus = sum(sum_sante_5_5plus_malades.nsp_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_5_17 = sum(sum_sante_5_5plus_malades.nsp_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.nsp_garcons_18plus = sum(sum_sante_5_5plus_malades.nsp_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_5_17 = sum(sum_sante_5_5plus_malades.fievre_femmes_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_femmes_18plus = sum(sum_sante_5_5plus_malades.fievre_femmes_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_femmes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_5_17 = sum(sum_sante_5_5plus_malades.fievre_garcons_5_17 * weights_sampling, na.rm = T)/ sum(sum_agegrp_5_17_hommes * weights_sampling, na.rm = T),
+    freq_sante_5_5plus_malades.fievre_garcons_18plus = sum(sum_sante_5_5plus_malades.fievre_garcons_18plus * weights_sampling, na.rm = T)/ sum(sum_agegrp_18plus_hommes * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.masfille_6m_4 = sum(sum_nut_2_muac.masfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.masgarcon_6m_4 = sum(sum_nut_2_muac.masgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mas_6m_4 = sum((sum_nut_2_muac.masgarcon_0_4+sum_nut_2_muac.masfille_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_nut_2_muac.mamfille_6m_4 = sum(sum_nut_2_muac.mamfille_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_filles * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mamgarcon_6m_4 = sum(sum_nut_2_muac.mamgarcon_0_4 * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4_garcons * weights_sampling, na.rm = T),
+    freq_nut_2_muac.mam_6m_4 = sum((sum_nut_2_muac.mamfille_0_4+sum_nut_2_muac.mamgarcon_0_4) * weights_sampling, na.rm = T)/ sum(sum_agegrp_6m_4 * weights_sampling, na.rm = T),
+    
+    freq_educ_4_handi_4_18.descol_autre = sum(sum_educ_4_handi_acces.descol_autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_acces = sum(sum_educ_4_handi_acces.descol_acces * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.descol_enseignement = sum(sum_educ_4_handi_acces.descol_enseignement * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_non_opti = sum(sum_educ_4_handi_acces.scol_non_opti * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.scol_ok = sum(sum_educ_4_handi_acces.scol_ok * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    freq_educ_4_handi_4_18.autre = sum(sum_educ_4_handi_acces.autre * weights_sampling, na.rm = T)/ sum(sum_handi_4_18 * weights_sampling, na.rm = T), 
+    
+    freq_protect_9 = sum(sum_protect_9 * weights_sampling, na.rm = T)/sum(sum_agegrp_4_18 * weights_sampling, na.rm = T),
+    freq_garcon_among_protect_9 = sum(sum_protect_9_garcon * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_fille_among_protect = sum(sum_protect_9_fille * weights_sampling, na.rm = T)/sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.agric = sum(sum_protect_10.agric * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.peche =  sum(sum_protect_10.peche * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.elevage = sum(sum_protect_10.elevage * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.carriere = sum(sum_protect_10.carriere * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.petit_commerce = sum(sum_protect_10.petit_commerce * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.restauration = sum(sum_protect_10.restauration * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.artisanat = sum(sum_protect_10.artisanat * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.travaux_domestiques = sum(sum_protect_10.travaux_domestiques * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.construction = sum(sum_protect_10.construction * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.transport = sum(sum_protect_10.transport * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.recrutes = sum(sum_protect_10.recrutes * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.prostitution = sum(sum_protect_10.prostitution * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.autre = sum(sum_protect_10.autre * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    freq_protect_10.nsp = sum(sum_protect_10.nsp * weights_sampling, na.rm = T)/ sum(sum_protect_9 * weights_sampling, na.rm = T),
+    
+  )%>%
+  gather(key = "variable", value= "percent", - sexe_chef_menage)
+
+# write.csv(freq_admin0_sexHHD, paste0("./output/freq/freq_admin0_sexHHD_.csv"))
+write.csv(freq_admin0_sexHHD, paste0("./output/freq/","freq_admin0_sexHHD_",format(Sys.time(), "%Y%m%d"),".csv"))
+
